@@ -21,6 +21,10 @@ type Config struct {
 		DB int
 		Password string
 	}
+	RabbitMQ struct{
+		Url string
+		Queue string
+	}
 }
 
 var AppConfig *Config
@@ -42,4 +46,5 @@ func InitConfig() {
 
 	initDB()
 	initRedis()
+	initRabbit()
 }
