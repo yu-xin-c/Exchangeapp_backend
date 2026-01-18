@@ -40,6 +40,9 @@ func SetupRouter() *gin.Engine {
 		api.POST("/articles/:id/like", controllers.LikeArticle)
 		api.GET("/articles/:id/like", controllers.GetArticleLikes)
 		api.GET("/articles/rank", controllers.GetTopArticles)
+
+		// QA RAG接口
+		api.POST("/qa", controllers.AnswerQuestion)
 	}
 	return r
 }

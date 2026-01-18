@@ -10,43 +10,46 @@ import (
 
 	"exchangeapp/config"
 	"exchangeapp/router"
+	"exchangeapp/services"
 )
 
-
 func main() {
- config.InitConfig()
+	config.InitConfig()
 
- r := router.SetupRouter()
+	// 初始化RAG服务
+	if err := services.InitRAGService(); err != nil {
+		log.Printf("Warning: Failed to initialize RAG service: %v. Falling back to simple retrieval.", err)
+	}
 
+	r := router.SetupRouter()
 
+	port := config.AppConfig.App.Port
 
-port := config.AppConfig.App.Port
-
-	if port ==""{
+	if port == "" {
 		port = ":8080"
 	}
 
 	srv := &http.Server{
 		Addr:    port,
 		Handler: r,
-	   }
-	   
-		go func() {
+	}
+
+	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("listen: %s\n", err)
-	   }
-	   }()
-	   
-	   quit := make(chan os.Signal, 1)
-	   signal.Notify(quit, os.Interrupt)
-	   <-quit
-	   log.Println("Shutdown Server ...")
-	   
-	   ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	   defer cancel()
-	   if err := srv.Shutdown(ctx); err != nil {
-	   log.Fatal("Server Shutdown:", err)
-	   }
-	   log.Println("Server exiting")
-   
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+	log.Println("Server exiting")
+
 }
